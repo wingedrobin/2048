@@ -1,0 +1,90 @@
+{
+	"backgroundLayerColor" : "#FAF8EF" ,
+	
+	"windowFrame" :
+	{
+		"rows"		: 4 ,
+		"columns"	: 4 ,
+		
+		"frameSize" :
+		{
+			"width"		: 640 ,
+			"height"	: 640
+		} ,
+		
+		"windowColor"	: "#BBADA0" ,
+		"frameColor"	: "#CDC1B4"
+	} ,
+	
+	"colorBlock" :
+	{
+		"blockColor" :
+		{
+			"2" :
+			{
+				"fontColor"			: "#776E65" ,
+				"backgroundColor"	: "#EEE4DA"
+			} ,
+			
+			"4" :
+			{
+				"fontColor"			: "#776E65" ,
+				"backgroundColor"	: "#EDE0C8"
+			} ,
+			
+			"8" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#F2B179"
+			} ,
+			
+			"16" :
+			{
+				"fontColor"			: "#FAF8EF" ,
+				"backgroundColor"	: "#F59563"
+			} ,
+			
+			"32" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#F67C5F"
+			} ,
+			
+			"64" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#F65E3B"
+			} ,
+			
+			"128" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#EDCF72"
+			} ,
+			
+			"256" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#EDCC61"
+			} ,
+			
+			"512" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#EDC850"
+			} ,
+			
+			"1024" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#ECC440"
+			} ,
+			
+			"2048" :
+			{
+				"fontColor"			: "#F9F6F2" ,
+				"backgroundColor"	: "#EDC12F"
+			}
+		}
+	}
+}
