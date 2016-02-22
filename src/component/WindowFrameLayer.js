@@ -50,19 +50,11 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		this._rows				= rows ;
 		this._columns			= columns ;
 		this._framesOriginal	= [ ] ;
-		this._emptyFrame		= ( new Array( rows * columns ) ).fill( true ) ;
-		this._unusedBlockBuffer	= [ ] ;
 		this._drawNode			= new cc.DrawNode( ) ;
-		this._frameContainer	= [ ] ;
-		
-		// this._frameContainer	= ( new Array( rows ) ).fill( [ ] ) ;
-		
-		for( var i = 0 ; i < rows ; i ++ )
-		{
-			this._frameContainer[ i ] = [ ] ;
-		}
 		
 		this.addChild( this._drawNode ) ;
+		
+		this.reset( ) ;
 		
 		this._calcFrameSize( ) ;
 		this._calcFramesOriginal( ) ;
@@ -82,6 +74,14 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		
 		this._touchListener				= null ;
 		
+		for( var row of this._frameContainer )
+			for( var block of row )
+				if( block )
+				{
+					block.release( ) ;
+					block.free( ) ;
+				}
+		
 		this._frameContainer.length		= 0 ;
 		this._frameContainer			= null ;
 		
@@ -89,6 +89,12 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		this._emptyFrame				= null ;
 		
 		this._lastActiveBlock			= null ;
+		
+		for( var block of this._unusedBlockBuffer )
+		{
+			block.release( ) ;
+			block.free( ) ;
+		}
 		
 		this._unusedBlockBuffer.length	= 0 ;
 		this._unusedBlockBuffer			= null ;
@@ -99,14 +105,39 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 	 */
 	reset : function( )
 	{
-		this._framesOriginal	= [ ] ;
-		this._emptyFrame		= ( new Array( rows * columns ) ).fill( true ) ;
-		this._unusedBlockBuffer	= [ ] ;
+		this._emptyFrame		= ( new Array( this._rows * this._columns ) ).fill( true ) ;
 		
-		for( var i = 0 ; i < rows ; i ++ )
+		if( !this._unusedBlockBuffer )
 		{
-			this._frameContainer[ i ] = [ ] ;
+			this._unusedBlockBuffer	= [ ] ;
 		}
+		
+		if( !this._frameContainer )
+		{
+			this._frameContainer = [ ] ;
+			
+			for( var i = 0 ; i < this._rows ; i ++ )
+			{
+				this._frameContainer[ i ] = [ ] ;
+			}
+		}
+		else
+		{
+			for( var i = 0 ; i < this._rows ; i ++ )
+			{
+				for( var j = 0 ; j < this._columns ; j ++ )
+				{
+					if( this._frameContainer[ i ][ j ] )
+					{
+						this._unusedBlockBuffer.push( this._frameContainer[ i ][ j ] ) ;
+						this._frameContainer[ i ][ j ].removeFromParent( ) ;
+						this._frameContainer[ i ][ j ] = null ;
+					}
+				}
+			}
+		}
+		
+		this._reachMaxNumber = false ;
 	} ,
 	
 	/**
@@ -256,12 +287,10 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 	
 	_onTouchEnded : function( touch , event )
 	{
-// cc.log( "TouchEnded" ) ;
 	} ,
 	
 	_onTouchCancelled : function( touch , event )
 	{
-// cc.log( "TouchCancelled" ) ;
 	} ,
 	
 	_moveBlock : function( direction )
@@ -300,16 +329,18 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 						{
 							this._frameContainer[ i ][ j ].moveTo( this._framesOriginal[ i ][ flag ] ) ;
 							this._frameContainer[ i ][ flag ].merge( this._frameContainer[ i ][ j ] ) ;
-							this._frameContainer[ i ][ j ].free( ) ;
 							this._frameContainer[ i ][ j ].removeFromParent( ) ;
+							
+							this._unusedBlockBuffer.push( this._frameContainer[ i ][ j ] ) ;
 							this._frameContainer[ i ][ j ] = null ;
+							
 							this._emptyFrame[ i * this._rows +  j ] = true ;
 							this._emptyFrame[ i * this._rows + flag ] = false ;
 							
 							this._lastActiveBlock = this._frameContainer[ i ][ flag ] ;
 							
 							if( this._frameContainer[ i ][ flag ].getNumber( ) ===
-								comp.WindowFrameLayer.MaxNumber )
+								proj.config[ "maxNumber" ] )
 							{
 								this._reachMaxNumber = true ;
 							}
@@ -374,16 +405,18 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 						{
 							this._frameContainer[ j ][ i ].moveTo( this._framesOriginal[ flag ][ i ] ) ;
 							this._frameContainer[ flag ][ i ].merge( this._frameContainer[ j ][ i ] ) ;
-							this._frameContainer[ j ][ i ].free( ) ;
 							this._frameContainer[ j ][ i ].removeFromParent( ) ;
+							
+							this._unusedBlockBuffer.push( this._frameContainer[ j ][ i ] ) ;
 							this._frameContainer[ j ][ i ] = null ;
+							
 							this._emptyFrame[ j * this._rows + i ] = true ;
 							this._emptyFrame[ flag * this._rows + i ] = false ;
 							
 							this._lastActiveBlock = this._frameContainer[ flag ][ i ] ;
 							
 							if( this._frameContainer[ flag ][ i ].getNumber( ) ===
-								comp.WindowFrameLayer.MaxNumber )
+								proj.config[ "maxNumber" ] )
 							{
 								this._reachMaxNumber = true ;
 							}
@@ -431,51 +464,6 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		
 		this._generateNewBlock( ) ;
 		this._generateNewBlock( ) ;
-		/*
-		var array = [ 2 , 4 , 8 , 16 , 32 , 64 , 128 , 256 , 512 , 1024 , 2048 , 2 , 4 , 8 , 16 , 32 ] ;
-		
-		
-		for( var i = 0 ; i < this._rows ; i ++ )
-			for( var j = 0 ; j < this._columns ; j ++ )
-			{
-				if( i === this._rows - 1 && j === this._columns - 1 )
-					break ;
-				this._frameContainer[ i ][ j ] = new comp.ColorBlockWithNumber( array[ i * this._rows + j ] ,
-																			   cc.color( proj.config[ "colorBlock" ]
-																									[ "blockColor" ]
-																									[ String( array[ i * this._rows + j ] ) ]
-																									[ "backgroundColor" ] ) ,
-																			   this._frameSize.width ,
-																			   this._frameSize.height ) ;
-			
-				this._frameContainer[ i ][ j ].setPosition( this._framesOriginal[ i ][ j ] ) ;
-				this._emptyFrame[ i * this._rows + j ] = false ;
-				this.addChild( this._frameContainer[ i ][ j ] ) ;
-			}
-		*/
-		/*
-		this._frameContainer[ 0 ][ 0 ] = new comp.ColorBlockWithNumber( 1024 ,
-																				   cc.color( proj.config[ "colorBlock" ]
-																										[ "blockColor" ]
-																										[ String( 1024 ) ]
-																										[ "backgroundColor" ] ) ,
-																				   this._frameSize.width ,
-																				   this._frameSize.height ) ;
-		this._frameContainer[ 0 ][ 0 ].setPosition( this._framesOriginal[ 0 ][ 0 ] ) ;
-		this._emptyFrame[ 0 ] = false ;
-		this.addChild( this._frameContainer[ 0 ][ 0 ] ) ;
-		
-		this._frameContainer[ 0 ][ 1 ] = new comp.ColorBlockWithNumber( 1024 ,
-																				   cc.color( proj.config[ "colorBlock" ]
-																										[ "blockColor" ]
-																										[ String( 1024 ) ]
-																										[ "backgroundColor" ] ) ,
-																				   this._frameSize.width ,
-																				   this._frameSize.height ) ;
-		this._frameContainer[ 0 ][ 1 ].setPosition( this._framesOriginal[ 0 ][ 1 ] ) ;
-		this._emptyFrame[ 1 ] = false ;
-		this.addChild( this._frameContainer[ 0 ][ 1 ] ) ;
-		*/
 	} ,
 	
 	onEnterTransitionDidFinish : function( )
@@ -496,13 +484,24 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		var row		= Math.floor( index / this._rows ) ;
 		var column	= index % this._rows ;
 		
-		this._frameContainer[ row ][ column ] = new comp.ColorBlockWithNumber( 2 ,
+		if( this._unusedBlockBuffer.length > 0 )
+		{
+			this._frameContainer[ row ][ column ] = this._unusedBlockBuffer.shift( ) ;
+			this._frameContainer[ row ][ column ].reset( 2 ) ;
+		}
+		else
+		{
+			this._frameContainer[ row ][ column ] = new comp.ColorBlockWithNumber( 2 ,
 																				   cc.color( proj.config[ "colorBlock" ]
 																										[ "blockColor" ]
 																										[ String( 2 ) ]
 																										[ "backgroundColor" ] ) ,
 																				   this._frameSize.width ,
 																				   this._frameSize.height ) ;
+			
+			this._frameContainer[ row ][ column ].retain( ) ;
+		}
+		
 		this._frameContainer[ row ][ column ].setPosition( this._framesOriginal[ row ][ column ] ) ;
 		this._emptyFrame[ row * this._rows + column ] = false ;
 		this.addChild( this._frameContainer[ row ][ column ] ) ;
@@ -511,12 +510,7 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		{
 			if( this.isGameOver( ) )
 				this.getParent( ).gameOver( false ) ;
-				// cc.log( "game over" ) ;
 		}
-	} ,
-	
-	_getEmptyFrames : function( )
-	{
 	} ,
 	
 	update : function( )
@@ -546,7 +540,7 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 			if( this._emptyFrame[ i ] )
 				emptyFrameIndices.push( i ) ;
 		}
-		cc.log( emptyFrameIndices ) ;
+		
 		return emptyFrameIndices ;
 	} ,
 	
@@ -602,9 +596,12 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 	onExit : function( )
 	{
 		this._super( ) ;
-		this._drawNode.clear( ) ;
-		this.removeAllChildren( ) ;
+		
 		cc.eventManager.removeListener( this._touchListener ) ;
+		
+		this._drawNode.clear( ) ;
+		this.free( ) ;
+		this.removeAllChildren( ) ;
 	}
 } ) ;
 
@@ -617,11 +614,5 @@ Object.defineProperty( comp.WindowFrameLayer , "padding" ,
 Object.defineProperty( comp.WindowFrameLayer , "touchDistanceThreshold" ,
 {
 	value		: 30 ,
-	enumerable	: true
-} ) ;
-
-Object.defineProperty( comp.WindowFrameLayer , "MaxNumber" ,
-{
-	value		: 2048 ,
 	enumerable	: true
 } ) ;

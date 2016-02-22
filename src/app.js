@@ -9,7 +9,7 @@ var proj	= gxd.proj || { } ;
 var MainScene = cc.Scene.extend(
 {
 	_mainLayer		: null ,
-	_interfaceLayer	: null ,
+	_gameOverLayer	: null ,
 	
 	ctor : function( )
 	{
@@ -38,13 +38,7 @@ var MainScene = cc.Scene.extend(
 			
 			this._mainLayer.setPosition( 160 , 0 ) ;
 			this.addChild( this._mainLayer , 2 ) ;
-			cc.log( this._mainLayer.getContentSize( ) ) ;
-			// this._interfaceLayer = new gxd.comp.InterfaceLayer( ) ;
-			// this._interfaceLayer.setPosition( 0 , 0 ) ;
-			// this.addChild( this._interfaceLayer , 3 ) ;
-		}	
-		else
-			cc.log( error ) ;
+		}
 	} ,
 	
 	onEnter : function( )
@@ -59,10 +53,28 @@ var MainScene = cc.Scene.extend(
 	
 	gameOver : function( complete )
 	{
-	cc.log( "in _gameOver" ) ;
+		if( this._gameOverLayer )
+			this.addChild( this._gameOverLayer , 10 ) ;
+		else
+		{
+			// this._initGameOverLayer( complete ) ;
+			this._gameOverLayer = new comp.GameOverLayer( cc.color( 255 , 237 , 151 , 150 ) ,
+														  this._mainLayer.getContentSize( ).width ,
+														  this._mainLayer.getContentSize( ).height ) ;
+			
+			this._gameOverLayer.setPosition( this._mainLayer.getPosition( ) ) ;
+			this._gameOverLayer.retain( ) ;
+			this.addChild( this._gameOverLayer , 10 ) ;
+		}
+		
+		this._gameOverLayer.setGameCompleteState( complete ) ;
+	} ,
+	
+	_initGameOverLayer : function( complete )
+	{
 		var mainLayerSize	= this._mainLayer.getContentSize( ) ;
 		var message			= complete ? MainScene.completeMessage : MainScene.FailedMessage ;
-	
+		
 		this._gameOverLayer = new comp.TouchBlockedLayer( cc.color( 255 , 237 , 151 , 150 ) ,
 														  mainLayerSize.width ,
 														  mainLayerSize.height ) ;
@@ -71,9 +83,39 @@ var MainScene = cc.Scene.extend(
 		messageLabel.setPosition( mainLayerSize.width * 0.5 ,
 								  mainLayerSize.height * 0.5 ) ;
 		
+		var leaveButton		= new cc.MenuItemSprite( new cc.Sprite( res.leave_normal ) ,
+													 new cc.Sprite( res.leave_selected ) ,
+													 this._onLeaveCallback ,
+													 this ) ;
+		
+		var tryAgainButton	= new cc.MenuItemSprite( new cc.Sprite( res.try_again_normal ) ,
+													 new cc.Sprite( res.try_again_selected ) ,
+													 this._onTryAgainCallback ,
+													 this ) ;
+		
+		var menu			= new cc.Menu( leaveButton , tryAgainButton ) ;
+		
+		menu.alignItemsHorizontallyWithPadding( 50 ) ;
+		menu.setPosition( mainLayerSize.width * 0.5 , mainLayerSize.height * 0.3 ) ;
+		
 		this._gameOverLayer.addChild( messageLabel ) ;
+		this._gameOverLayer.addChild( menu ) ;
 		this._gameOverLayer.setPosition( this._mainLayer.getPosition( ) ) ;
+		this._gameOverLayer.retain( ) ;
 		this.addChild( this._gameOverLayer , 10 ) ;
+	} ,
+	
+	onLeave : function( )
+	{
+		cc.director.end( ) ;
+	} ,
+	
+	onTryAgain : function( )
+	{
+		this._mainLayer.reset( ) ;
+		this._mainLayer._generateNewBlock( ) ;
+		this._mainLayer._generateNewBlock( ) ;
+		this.removeChild( this._gameOverLayer ) ;
 	} ,
 	
 	onExitTransitionDidFinish : function( )
@@ -84,17 +126,8 @@ var MainScene = cc.Scene.extend(
 	onExit : function( )
 	{
 		this._super( ) ;
+		if( this._gameOverLayer )
+			this._gameOverLayer.release( ) ;
+		this.removeAllChildren( ) ;
 	}
-} ) ;
-
-Object.defineProperty( MainScene , "completeMessage" ,
-{
-	value		: "You Win!" ,
-	enumerable	: true
-} ) ;
-
-Object.defineProperty( MainScene , "FailedMessage" ,
-{
-	value		: "Game Over" ,
-	enumerable	: true
 } ) ;

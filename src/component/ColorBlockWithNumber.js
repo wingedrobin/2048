@@ -18,19 +18,28 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 	_numberLabel	: null ,
 	_actions		: null ,
 	
+	/**
+	 * Constructor function.
+	 * @function
+	 */
 	ctor : function( number , color , width , height )
 	{
 		this._super( color , width , height ) ;
 		
-		this._number = number ;
-		this._numberLabel = new cc.LabelTTF( number ,
-											 comp.ColorBlockWithNumber.fontName ,
-											 comp.ColorBlockWithNumber.fontSize ) ;
+		this._number		= number ;
+		this._numberLabel	= new cc.LabelTTF( number ,
+											   comp.ColorBlockWithNumber.fontName ,
+											   comp.ColorBlockWithNumber.fontSize ) ;
 		
 		this._numberLabel.setPosition( width * 0.5 , height * 0.5 ) ;
+		this._changeNumberLabelColor( ) ;										// 修正
 		this.addChild( this._numberLabel ) ;
 	} ,
 	
+	/**
+	 *
+	 * @function
+	 */
 	free : function( )
 	{
 		this._number		= null ;
@@ -38,6 +47,12 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 		this.removeAllChildren( ) ;
 	} ,
 	
+	/**
+	 * Reset the color block.
+	 *
+	 * @function
+	 * @param		{number}	Number of color block.
+	 */
 	reset : function( number )
 	{
 		this.setNumber( number ) ;
@@ -55,12 +70,24 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 		this._super( ) ;
 	} ,
 	
+	/**
+	 * Set the number of color block.
+	 *
+	 * @function
+	 * @param		{number}	Number of color block.
+	 */
 	setNumber : function( number )
 	{
 		this._number = number ;
 		this._numberLabel.setString( this._number ) ;
 	} ,
 	
+	/**
+	 * Get the number of color block.
+	 *
+	 * @function
+	 * @return		{number}	Number of color block.
+	 */
 	getNumber : function( )
 	{
 		return this._number ;
@@ -82,12 +109,25 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 																 [ "fontColor" ] ) ) ;
 	} ,
 	
+	/**
+	 * Move the color block to specific position by cc.moveTo action.
+	 *
+	 * @function
+	 * @param		{cc.p}	New position.
+	 */
 	moveTo : function( position )
 	{
 		this._actions = cc.moveTo( comp.ColorBlockWithNumber.moveDuration , position ) ;
+		this._actions.retain( ) ;
 		this.runAction( this._actions ) ;
 	} ,
 	
+	/**
+	 * To merge other color block.
+	 *
+	 * @function
+	 * @param		{gxd.comp.ColorBlockWithNumber}	Color block which to be merge.
+	 */
 	merge : function( colorBlock )
 	{
 		var sum = this._number + colorBlock.getNumber( ) ;
@@ -102,12 +142,27 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 												   comp.ColorBlockWithNumber.shrinkFactor ,
 												   comp.ColorBlockWithNumber.shrinkFactor ) ] ) ;
 		
+		this._actions.retain( ) ;
 		this.runAction( this._actions ) ;
 	} ,
 	
+	/**
+	 * Check if all actions of color block is done.
+	 *
+	 * @function
+	 * @return		{boolean}
+	 */
 	isAllActionsDone : function( )
 	{
-		return this._actions.isDone( ) ;
+		var done = this._actions.isDone( ) ;
+		
+		if( done )
+		{
+			this._actions.release( ) ;
+			this._actions = null ;
+		}
+		
+		return done ;
 	} ,
 	
 	onExitTransitionDidFinish : function( )
@@ -118,8 +173,6 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 	onExit : function( )
 	{
 		this._super( ) ;
-		// this.removeAllChildren( ) ;
-		// this.free( ) ;
 	}
 } ) ;
 

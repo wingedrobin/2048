@@ -1,5 +1,6 @@
 {
-	"backgroundLayerColor" : "#FAF8EF" ,
+	"maxNumber"				: 2048 ,
+	"backgroundLayerColor"	: "#FAF8EF" ,
 	
 	"windowFrame" :
 	{
