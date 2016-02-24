@@ -588,7 +588,7 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		this.getParent( ).gameOver( true ) ;
 	} ,
 	
-	onExitTransitionDidFinish : function( )
+	onExitTransitionDidStart : function( )
 	{
 		this._super( ) ;
 	} ,

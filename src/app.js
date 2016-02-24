@@ -118,7 +118,7 @@ var MainScene = cc.Scene.extend(
 		this.removeChild( this._gameOverLayer ) ;
 	} ,
 	
-	onExitTransitionDidFinish : function( )
+	onExitTransitionDidStart : function( )
 	{
 		this._super( ) ;
 	} ,

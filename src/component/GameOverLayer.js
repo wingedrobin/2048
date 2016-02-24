@@ -80,7 +80,7 @@ comp.GameOverLayer = cc.LayerColor.extend(
 		this.getParent( ).onTryAgain( ) ;
 	} ,
 	
-	onExitTransitionDidFinish : function( )
+	onExitTransitionDidStart : function( )
 	{
 		this._super( ) ;
 	} ,

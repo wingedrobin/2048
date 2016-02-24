@@ -165,7 +165,7 @@ comp.ColorBlockWithNumber = cc.LayerColor.extend(
 		return done ;
 	} ,
 	
-	onExitTransitionDidFinish : function( )
+	onExitTransitionDidStart : function( )
 	{
 		this._super( ) ;
 	} ,
