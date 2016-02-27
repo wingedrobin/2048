@@ -74,13 +74,17 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		
 		this._touchListener				= null ;
 		
-		for( var row of this._frameContainer )
-			for( var block of row )
-				if( block )
+		for( var i = 0 ; i < this._rows ; i ++ )
+		{
+			for( var j = 0 ; j < this._columns ; j ++ )
+			{
+				if( this._frameContainer[ i ][ j ] )
 				{
-					block.release( ) ;
-					block.free( ) ;
+					this._frameContainer[ i ][ j ].release( ) ;
+					this._frameContainer[ i ][ j ].free( ) ;
 				}
+			}
+		}
 		
 		this._frameContainer.length		= 0 ;
 		this._frameContainer			= null ;
@@ -90,10 +94,10 @@ comp.WindowFrameLayer = cc.LayerColor.extend(
 		
 		this._lastActiveBlock			= null ;
 		
-		for( var block of this._unusedBlockBuffer )
+		for( var i = 0 ; i < this._unusedBlockBuffer.length ; i ++ )
 		{
-			block.release( ) ;
-			block.free( ) ;
+			this._unusedBlockBuffer[ i ].release( ) ;
+			this._unusedBlockBuffer[ i ].free( ) ;
 		}
 		
 		this._unusedBlockBuffer.length	= 0 ;
